@@ -1,0 +1,17 @@
+{
+  "name": "daily-signs-toolkit",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Figma daily-sign workflow and local PNG compression toolkit",
+  "scripts": {
+    "postinstall": "npm install --prefix tools/png-under-200k",
+    "dev": "npm run dev --prefix tools/png-under-200k",
+    "build": "npm run build --prefix tools/png-under-200k",
+    "test": "npm run test --prefix tools/png-under-200k",
+    "compress": "npm run cli --prefix tools/png-under-200k --"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

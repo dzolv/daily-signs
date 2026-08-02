@@ -1,0 +1,47 @@
+# Local agent/project memory
+.anamnesis/
+.codex/
+.claude/
+.mcp.json
+
+# Private workspace data
+.local/
+workspace/
+input/
+output/
+source/
+backgrounds/
+reference/
+
+# Credentials
+.env
+.env.*
+!.env.example
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+token*.json
+credentials*.json
+secrets*.json
+service-account*.json
+
+# Source data and delivery archives
+*.xlsx
+*.xls
+*.csv
+*.tsv
+*.zip
+
+# Dependencies, build output, and logs
+node_modules/
+dist/
+.npm-cache/
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
