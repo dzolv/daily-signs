@@ -28,7 +28,7 @@ export class HandoffStore {
   constructor(root) { this.root = path.resolve(root); this.local = path.join(this.root, '.local'); }
 
   // Reject every symlink/junction component, including .local itself. Private data never leaves .local.
-  async localPath(relative, { createParents = false } = {}) {
+  async localPath(relative, { createParents = false, allowMissingParents = false } = {}) {
     check(typeof relative === 'string' && relative.length > 0 && !path.isAbsolute(relative) && !relative.includes('\\') && !relative.includes(':') && !relative.includes('\0'), 'Use a repository-relative .local/ path with forward slashes');
     const parts = relative.split('/');
     check(parts[0] === '.local' && parts.length > 1 && parts.every(p => p && p !== '.' && p !== '..'), 'Path must remain inside .local/');
@@ -44,7 +44,7 @@ export class HandoffStore {
         if (createParents && i < parts.length - 1) {
           try { await fs.mkdir(current); } catch (mkdirError) { if (mkdirError.code !== 'EEXIST') throw mkdirError; }
           info = await fs.lstat(current);
-        } else if (i < parts.length - 1) fail('INVALID_PATH', 'Parent directory does not exist');
+        } else if (i < parts.length - 1 && !allowMissingParents) fail('INVALID_PATH', 'Parent directory does not exist');
       }
       if (info) {
         check(!info.isSymbolicLink(), 'Symlinks and junctions are not allowed in private paths');

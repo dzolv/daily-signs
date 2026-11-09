@@ -45,6 +45,34 @@ test('partially failed batch resumes missing input without recompressing prior s
   const resumed = await batchExport(f.root, { input: first.reportPath, resume: true });
   assert.equal(resumed.complete, true); assert.equal(resumed.skipped, 1); assert.equal(resumed.succeeded, 2);
 });
+test('missing input parents fail only their item and resume after inputs arrive without creating input directories', async t => {
+  const f = await fixture(t);
+  const missingDirectory = path.join(f.root, '.local/not-exported/nested');
+  f.manifest.items.push({ rawPath: '.local/not-exported/nested/sign.png', outputName: '日签-2.png' });
+  await assert.rejects(() => f.store.localPath(f.manifest.items[1].rawPath), { code: 'INVALID_PATH' });
+  const first = await start(f);
+  assert.equal(first.complete, false); assert.equal(first.succeeded, 1); assert.equal(first.failed, 1);
+  const report = await f.store.readInput(first.reportPath);
+  assert.equal(report.items[0].status, 'complete'); assert.equal(report.items[1].status, 'failed');
+  assert.equal(report.items[1].error.code, 'INVALID_PATH');
+  await assert.rejects(() => fs.stat(path.join(f.root, '.local/not-exported')), { code: 'ENOENT' });
+  const successfulOutput = path.join(f.root, first.pngPaths[0]); const before = await fs.stat(successfulOutput);
+  await fs.mkdir(missingDirectory, { recursive: true });
+  await fs.writeFile(path.join(missingDirectory, 'sign.png'), f.png);
+  const resumed = await batchExport(f.root, { input: first.reportPath, resume: true });
+  assert.equal(resumed.complete, true); assert.equal(resumed.skipped, 1); assert.equal(resumed.succeeded, 2);
+  assert.equal((await fs.stat(successfulOutput)).mtimeMs, before.mtimeMs);
+});
+test('allowing missing input parents still rejects linked parents and unsafe path components', async t => {
+  const f = await fixture(t);
+  const elsewhere = path.join(f.root, 'elsewhere'); await fs.mkdir(elsewhere);
+  await fs.symlink(elsewhere, path.join(f.root, '.local/linked'), process.platform === 'win32' ? 'junction' : 'dir');
+  for (const rawPath of ['.local/linked/missing/sign.png', '.local/missing/../outside.png', '.local/missing/CON.png', '.local/missing/alias./sign.png']) {
+    await assert.rejects(() => start(f, { items: [{ rawPath, outputName: '日签.png' }] }), { code: 'INVALID_INPUT' });
+  }
+  assert.deepEqual(await fs.readdir(elsewhere), []);
+  await assert.rejects(() => fs.stat(path.join(f.root, '.local/missing')), { code: 'ENOENT' });
+});
 test('resume refreshes a stale report after acquiring the lock instead of overwriting completed work', async t => {
   const f = await fixture(t); const first = await start(f);
   const current = await f.store.readInput(first.reportPath);

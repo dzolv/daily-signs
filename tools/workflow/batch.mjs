@@ -16,7 +16,7 @@ async function validateManifest(store, manifest, output) {
     check(object(item) && typeof item.rawPath === 'string' && typeof item.outputName === 'string' && /^[^/\\]+\.png$/i.test(item.outputName), 'INVALID_MANIFEST', 'Each item needs rawPath and a single PNG outputName, not a directory');
     check(!names.has(item.outputName.toLowerCase()), 'DUPLICATE_OUTPUT', 'Output names must be unique, including case aliases');
     names.add(item.outputName.toLowerCase());
-    await store.localPath(item.rawPath);
+    await store.localPath(item.rawPath, { allowMissingParents: true });
     await store.localPath(`${output}/${item.outputName}`, { createParents: false });
   }
   check(Buffer.byteLength(canonical(manifest)) <= 1024 * 1024, 'INVALID_MANIFEST', 'Batch manifest exceeds 1 MiB');
