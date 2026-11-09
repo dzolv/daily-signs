@@ -5,11 +5,17 @@
   "license": "MIT",
   "description": "Figma daily-sign workflow and local PNG compression toolkit",
   "scripts": {
-    "postinstall": "npm install --prefix tools/png-under-200k",
+    "postinstall": "npm ci --prefix tools/png-under-200k",
     "dev": "npm run dev --prefix tools/png-under-200k",
     "build": "npm run build --prefix tools/png-under-200k",
-    "test": "npm run test --prefix tools/png-under-200k",
-    "compress": "npm run cli --prefix tools/png-under-200k --"
+    "test": "node --test tools/handoff/test/*.test.mjs tools/maintenance/test/*.test.mjs tools/setup/test/*.test.mjs tools/workflow/test/*.test.mjs && npm run test --prefix tools/png-under-200k",
+    "setup": "node tools/setup/cli.mjs",
+    "consent": "node tools/setup/consent-cli.mjs",
+    "deps:status": "node tools/maintenance/cli.mjs status",
+    "deps:check": "node tools/maintenance/cli.mjs check",
+    "handoff": "node tools/handoff/cli.mjs",
+    "workflow": "node tools/workflow/cli.mjs",
+    "compress": "node tools/png-under-200k/src/cli.js"
   },
   "engines": {
     "node": ">=20.19.0"

@@ -15,14 +15,14 @@
     "test": "node --test"
   },
   "dependencies": {
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "sharp": "latest",
-    "upng-js": "latest"
+    "lucide-react": "^1.68.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sharp": "^0.35.5",
+    "upng-js": "^2.1.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest"
+    "@vitejs/plugin-react": "^6.2.1",
+    "vite": "^8.3.5"
   }
 }
