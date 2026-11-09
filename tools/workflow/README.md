@@ -15,7 +15,9 @@ npm run workflow -- preflight --local-only
 
 ## 保存完整导出并压缩
 
-宿主调用真实 `get_export_image` 后，直接将完整返回变量序列化到 `.local/` 数据文件，或把完整返回送入 stdin。不要手抄、截取、重组 Base64，也不要把图片数据塞进 Node/PowerShell 程序字符串。宿主无法完整传递时说明缺口。CLI 不调用 MCP；保留和序列化返回仍由宿主工具负责。
+宿主调用真实 `get_export_image` 后，直接将完整返回变量序列化到 `.local/` 数据文件，或把完整返回送入 stdin。不要由模型转写、截取或重组 Base64，不要把图片数据插值进 shell 命令；宿主可对完整返回自动 JSON 序列化并传递给文件工具。宿主无法完整传递时说明缺口。CLI 不调用 MCP；保留和序列化返回仍由宿主工具负责。
+
+大返回的宿主自动传递示例见 [Pixso 执行说明](../../docs/pixso-execution.md)。传参大小限制应由宿主循环处理，不让模型逐块转写；权限/内容审批拒绝不能靠分块绕过。先确认输入数据已完整保存，再运行 `save-export`，成功后再批压。程序会创建必要输出父目录，但不能生成缺失的输入图片。
 
 ```powershell
 npm run workflow -- save-export --input .local/input/synthetic-mcp-return.json --output .local/export-raw/synthetic-preview.png --compress .local/export/synthetic-preview.png --kind trial
@@ -50,6 +52,8 @@ npm run workflow -- resume-batch --input .local/batch.json --output .local/deliv
 ```
 
 输出目录必须全新；只输出清单指定 PNG，拒绝重复文件名（含大小写）和越界路径，单个输出名不能含目录。复用现有压缩核心，默认保留输入尺寸，不静默缩图或升到 2x。无法在原尺寸达到 204,800 字节则记录失败，其他项继续。终端只返回一行汇总，详细的 manifest.json、report.json 留在该本地目录，每项记录原图/成图尺寸、字节、hash 或具体失败。
+
+清单里的原图文件或其父目录尚不存在时，只记录该项失败并继续其他项，不创建输入目录。补齐实际导出后再恢复；路径越界或链接等不安全输入仍在开工前拒绝。输出父目录会自动创建，无须先手工建立空目录。
 
 恢复时拿锁后重新读最新记录，校验已成功的原图与输出 hash/可解码性，跳过成功的相同输入。先前缺失输入补齐后可恢复；已记录输入变化、成功输出损坏/缺失、清单变化会报告，不能误用旧结果或覆盖输出，应建立新批次。崩溃留下未记录输出或 batch.lock 时先查实际文件与 PID，不能自动覆盖或抢锁。用户只拿指定 PNG，机器记录是新聊天的本地批压交接入口；云端仍需模型重新读取、使用已有 Pixso 工具和判断，本 CLI 不自动连接或设计。
 
